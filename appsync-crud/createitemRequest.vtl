@@ -1,0 +1,13 @@
+{
+  "version": "2017-02-28",
+  "operation": "PutItem",
+  "key": {
+    "id": {
+      "S": "$ctx.args.id"
+    }
+  },
+  "attributeValues": {
+    "name": { "S": "$ctx.args.name" },
+    "description": { "S": "$ctx.args.description" }
+  }
+}
