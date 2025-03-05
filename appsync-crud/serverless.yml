@@ -1,56 +1,3 @@
-service: aws-appsync-crud
-frameworkVersion: '4'
-
-provider:
-  name: aws
-  runtime: nodejs14.x
-  region: us-east-1
-  stage: dev
-
-plugins:
-  - serverless-appsync-plugin
-
-custom:
-  appSync:
-    name: ${self:service}-${self:provider.stage}
-    authenticationType: API_KEY
-    schema: schema.graphql
-
-appSync:
-  name: ${self:custom.appSync.name}
-  authenticationType: ${self:custom.appSync.authenticationType}
-  mappingTemplates:
-    # point to your .vtl files for resolvers
-    - dataSource: ItemsTable
-      type: Query
-      field: getItem
-      request: request.vtl
-      response: response.vtl
-    # Add more resolvers here...
-  dataSources:
-    - type: AMAZON_DYNAMODB
-      name: ItemsTable
-      config:
-        tableName: { Ref: ItemsTable }
-
-functions:
-  # If you want Lambda resolvers, define them here
-  # e.g., "hello" or more advanced resolvers
-
-resources:
-  Resources:
-    ItemsTable:
-      Type: AWS::DynamoDB::Table
-      Properties:
-        TableName: ItemsTable-${self:provider.stage}
-        AttributeDefinitions:
-          - AttributeName: id
-            AttributeType: S
-        KeySchema:
-          - AttributeName: id
-            KeyType: HASH
-        BillingMode: PAY_PER_REQUEST
-
 service: appsync-crud
 frameworkVersion: '4'
 
@@ -72,9 +19,34 @@ custom:
 appSync:
   name: ${self:custom.appSync.name}
   authenticationType: ${self:custom.appSync.authenticationType}
-  mappingTemplates: []
-  dataSources: []
+
+  mappingTemplates:
+    - dataSource: ItemsTable
+      type: Query
+      field: getItem
+      request: vtl/getItemRequest.vtl
+      response: vtl/getItemResponse.vtl
+
+  dataSources:
+    - type: AMAZON_DYNAMODB
+      name: ItemsTable
+      config:
+        tableName: { Ref: ItemsTable }
 
 functions:
   hello:
     handler: handler.hello
+
+resources:
+  Resources:
+    ItemsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ItemsTable-${self:provider.stage}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST 
